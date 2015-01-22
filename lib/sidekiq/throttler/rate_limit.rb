@@ -18,6 +18,11 @@ module Sidekiq
       attr_reader :worker
 
       ##
+      # @return [Class]
+      #   The class which receives the request for options. Useful when using a JobWrapper design.
+      attr_reader :class_for_options
+
+      ##
       # @return [Array]
       #   The message payload for the current job.
       attr_reader :payload
@@ -41,6 +46,9 @@ module Sidekiq
       #   Either :memory or :redis, the storage backend to use
       def initialize(worker, payload, queue, options = {})
         @worker = worker
+        if payload.is_a?(Array) && payload.first.is_a?(Hash) && payload.first.keys.include?('job_class')
+          @class_for_options = payload.first['job_class'].constantize rescue worker.class
+        end
         @payload = payload
         @queue = queue
 
@@ -73,7 +81,7 @@ module Sidekiq
       #
       # @return [{String => Float, Integer}]
       def options
-        @options ||= (worker.class.get_sidekiq_options['throttle'] || {}).stringify_keys
+        @options ||= (class_for_options.get_sidekiq_options['throttle'] || {}).stringify_keys
       end
 
       ##
