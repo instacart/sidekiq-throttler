@@ -82,7 +82,8 @@ module Sidekiq
       #
       # @return [{String => Float, Integer}]
       def options
-        @options ||= (class_for_options.get_sidekiq_options['throttle'] || {}).stringify_keys
+        throttle_options = class_for_options.get_sidekiq_options['throttle'] || {} rescue {}
+        @options ||= throttle_options.stringify_keys
       end
 
       ##
