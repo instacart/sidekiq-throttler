@@ -46,6 +46,7 @@ module Sidekiq
       #   Either :memory or :redis, the storage backend to use
       def initialize(worker, payload, queue, options = {})
         @worker = worker
+        @class_for_options = worker.class
         if payload.is_a?(Array) && payload.first.is_a?(Hash) && payload.first.keys.include?('job_class')
           @class_for_options = payload.first['job_class'].constantize rescue worker.class
         end
